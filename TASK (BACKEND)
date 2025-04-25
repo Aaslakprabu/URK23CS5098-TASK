@@ -4,7 +4,7 @@ import java.util.*;
 public class TaskDAO {
     private final String URL = "jdbc:mysql://localhost:3306/taskdb";
     private final String USER = "root";
-    private final String PASSWORD = "yourpassword"; // change this
+    private final String PASSWORD = "root"; // change this
 
     private Connection getConnection() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
