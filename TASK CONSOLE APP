@@ -1,0 +1,60 @@
+import java.util.*;
+
+public class TaskManager {
+    private static Scanner scanner = new Scanner(System.in);
+    private static TaskDAO dao = new TaskDAO();
+
+    public static void main(String[] args) {
+        int choice;
+
+        do {
+            System.out.println("\n--- Task Management System ---");
+            System.out.println("1. Add Task");
+            System.out.println("2. View All Tasks");
+            System.out.println("3. Delete Task");
+            System.out.println("4. Exit");
+            System.out.print("Enter choice: ");
+            choice = scanner.nextInt();
+            scanner.nextLine(); // consume newline
+
+            try {
+                switch (choice) {
+                    case 1 -> addTask();
+                    case 2 -> viewTasks();
+                    case 3 -> deleteTask();
+                    case 4 -> System.out.println("Goodbye!");
+                    default -> System.out.println("Invalid choice.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        } while (choice != 4);
+    }
+
+    private static void addTask() throws Exception {
+        System.out.print("Title: ");
+        String title = scanner.nextLine();
+        System.out.print("Description: ");
+        String description = scanner.nextLine();
+        dao.addTask(new Task(title, description));
+        System.out.println("Task added.");
+    }
+
+    private static void viewTasks() throws Exception {
+        List<Task> tasks = dao.getAllTasks();
+        if (tasks.isEmpty()) {
+            System.out.println("No tasks.");
+        } else {
+            for (Task task : tasks) {
+                System.out.println(task);
+            }
+        }
+    }
+
+    private static void deleteTask() throws Exception {
+        System.out.print("Enter task ID to delete: ");
+        int id = scanner.nextInt();
+        dao.deleteTask(id);
+        System.out.println("Task deleted (if ID existed).");
+    }
+}
