@@ -1,0 +1,49 @@
+import java.sql.*;
+import java.util.*;
+
+public class TaskDAO {
+    private final String URL = "jdbc:mysql://localhost:3306/taskdb";
+    private final String USER = "root";
+    private final String PASSWORD = "yourpassword"; // change this
+
+    private Connection getConnection() throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    public void addTask(Task task) throws Exception {
+        String sql = "INSERT INTO tasks (title, description) VALUES (?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.executeUpdate();
+        }
+    }
+
+    public List<Task> getAllTasks() throws Exception {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks";
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                tasks.add(new Task(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("description")
+                ));
+            }
+        }
+        return tasks;
+    }
+
+    public void deleteTask(int id) throws Exception {
+        String sql = "DELETE FROM tasks WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+}
