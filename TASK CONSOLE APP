@@ -1,60 +1,95 @@
-import java.util.*;
+package ui;
 
-public class TaskManager {
-    private static Scanner scanner = new Scanner(System.in);
-    private static TaskDAO dao = new TaskDAO();
+import model.Task;
+import dao.TaskDAO;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
+
+public class TaskManagerApp extends JFrame {
+    private JTextField titleField, idField;
+    private JTextArea descArea, taskListArea;
+    private TaskDAO dao = new TaskDAO();
+
+    public TaskManagerApp() {
+        setTitle("Task Manager");
+        setSize(500, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Input Panel
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2));
+        titleField = new JTextField();
+        descArea = new JTextArea(3, 20);
+        idField = new JTextField();
+
+        inputPanel.add(new JLabel("Task Title:"));
+        inputPanel.add(titleField);
+        inputPanel.add(new JLabel("Description:"));
+        inputPanel.add(new JScrollPane(descArea));
+        inputPanel.add(new JLabel("Task ID to Delete:"));
+        inputPanel.add(idField);
+
+        JButton addBtn = new JButton("Add Task");
+        JButton viewBtn = new JButton("View Tasks");
+        JButton deleteBtn = new JButton("Delete Task");
+
+        inputPanel.add(addBtn);
+        inputPanel.add(viewBtn);
+        inputPanel.add(deleteBtn);
+
+        add(inputPanel, BorderLayout.NORTH);
+
+        // Display Panel
+        taskListArea = new JTextArea();
+        taskListArea.setEditable(false);
+        add(new JScrollPane(taskListArea), BorderLayout.CENTER);
+
+        // Button Actions
+        addBtn.addActionListener(e -> {
+            try {
+                String title = titleField.getText();
+                String desc = descArea.getText();
+                dao.addTask(new Task(title, desc));
+                JOptionPane.showMessageDialog(this, "Task added!");
+                titleField.setText("");
+                descArea.setText("");
+            } catch (Exception ex) {
+                showError(ex);
+            }
+        });
+
+        viewBtn.addActionListener(e -> {
+            try {
+                List<Task> tasks = dao.getAllTasks();
+                taskListArea.setText("");
+                for (Task t : tasks) {
+                    taskListArea.append(t + "\n");
+                }
+            } catch (Exception ex) {
+                showError(ex);
+            }
+        });
+
+        deleteBtn.addActionListener(e -> {
+            try {
+                int id = Integer.parseInt(idField.getText());
+                dao.deleteTask(id);
+                JOptionPane.showMessageDialog(this, "Task deleted!");
+                idField.setText("");
+            } catch (Exception ex) {
+                showError(ex);
+            }
+        });
+    }
+
+    private void showError(Exception ex) {
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+    }
 
     public static void main(String[] args) {
-        int choice;
-
-        do {
-            System.out.println("\n--- Task Management System ---");
-            System.out.println("1. Add Task");
-            System.out.println("2. View All Tasks");
-            System.out.println("3. Delete Task");
-            System.out.println("4. Exit");
-            System.out.print("Enter choice: ");
-            choice = scanner.nextInt();
-            scanner.nextLine(); // consume newline
-
-            try {
-                switch (choice) {
-                    case 1 -> addTask();
-                    case 2 -> viewTasks();
-                    case 3 -> deleteTask();
-                    case 4 -> System.out.println("Goodbye!");
-                    default -> System.out.println("Invalid choice.");
-                }
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
-            }
-        } while (choice != 4);
-    }
-
-    private static void addTask() throws Exception {
-        System.out.print("Title: ");
-        String title = scanner.nextLine();
-        System.out.print("Description: ");
-        String description = scanner.nextLine();
-        dao.addTask(new Task(title, description));
-        System.out.println("Task added.");
-    }
-
-    private static void viewTasks() throws Exception {
-        List<Task> tasks = dao.getAllTasks();
-        if (tasks.isEmpty()) {
-            System.out.println("No tasks.");
-        } else {
-            for (Task task : tasks) {
-                System.out.println(task);
-            }
-        }
-    }
-
-    private static void deleteTask() throws Exception {
-        System.out.print("Enter task ID to delete: ");
-        int id = scanner.nextInt();
-        dao.deleteTask(id);
-        System.out.println("Task deleted (if ID existed).");
+        SwingUtilities.invokeLater(() -> new TaskManagerApp().setVisible(true));
     }
 }
